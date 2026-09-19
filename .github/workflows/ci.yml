@@ -39,6 +39,7 @@ jobs:
         with:
           node-version: "22"
           cache: npm
+      - run: composer install --no-interaction --prefer-dist
       - run: npm ci
       - run: npx playwright install --with-deps chromium
       - run: npm run test:browser
