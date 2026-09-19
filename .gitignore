@@ -1,3 +1,8 @@
 .env
 evaluation/data/
 evaluation/reports/
+node_modules/
+vendor/
+.phpunit.cache/
+test-results/
+playwright-report/
