@@ -1,4 +1,5 @@
 import {
+  IMAGE_LIMITS,
   formatFileSize,
   readImageDimensions,
   validateImageDimensions,
@@ -51,6 +52,24 @@ import {
   const workflowSteps = [1, 2, 3].map((number) =>
     document.getElementById(`workflowStep${number}`),
   );
+  const apiEndpoint = document.body.dataset.apiEndpoint || "/api/analyze.php";
+  const configuredModelId =
+    document.body.dataset.modelId || "Organika/sdxl-detector";
+  const runtimeImageLimits = Object.freeze({
+    ...IMAGE_LIMITS,
+    maxFileBytes:
+      Number.parseInt(document.body.dataset.maxFileBytes, 10) ||
+      IMAGE_LIMITS.maxFileBytes,
+    maxWidth:
+      Number.parseInt(document.body.dataset.maxWidth, 10) ||
+      IMAGE_LIMITS.maxWidth,
+    maxHeight:
+      Number.parseInt(document.body.dataset.maxHeight, 10) ||
+      IMAGE_LIMITS.maxHeight,
+    maxPixels:
+      Number.parseInt(document.body.dataset.maxPixels, 10) ||
+      IMAGE_LIMITS.maxPixels,
+  });
 
   let currentFile = null,
     currentImageDataUrl = null,
@@ -75,7 +94,7 @@ import {
 
   // ── File Handling ──
   async function handleFile(file) {
-    const uploadValidation = validateUploadCandidate(file);
+    const uploadValidation = validateUploadCandidate(file, runtimeImageLimits);
     if (!uploadValidation.ok) {
       showToast(`⚠️ ${uploadValidation.message}`);
       return;
@@ -87,7 +106,10 @@ import {
       showToast("⚠️ The selected file could not be decoded as an image.");
       return;
     }
-    const dimensionValidation = validateImageDimensions(dimensions);
+    const dimensionValidation = validateImageDimensions(
+      dimensions,
+      runtimeImageLimits,
+    );
     if (!dimensionValidation.ok) {
       showToast(`⚠️ ${dimensionValidation.message}`);
       return;
@@ -402,7 +424,12 @@ import {
         heuristicResult = null,
         apiError = null;
       try {
-        backendResult = await callBackendAPI(currentFile);
+        backendResult = await callBackendAPI(
+          currentFile,
+          apiEndpoint,
+          fetch,
+          configuredModelId,
+        );
         if (backendResult.model.status === "ok") {
           finalScore = backendResult.model.artificial_score;
           method = "backend-model";

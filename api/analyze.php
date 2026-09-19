@@ -6,15 +6,14 @@ use AiImageDetector\ApiClient;
 use AiImageDetector\ImageValidator;
 use AiImageDetector\ModelResponseParser;
 
-require dirname(__DIR__) . '/src/ApiClient.php';
-require dirname(__DIR__) . '/src/ImageValidator.php';
-require dirname(__DIR__) . '/src/ModelResponseParser.php';
+require dirname(__DIR__) . '/bootstrap.php';
 
 header('Content-Type: application/json; charset=utf-8');
 header('Cache-Control: no-store');
 header('X-Content-Type-Options: nosniff');
 
 $config = require dirname(__DIR__) . '/config/model.php';
+$services = require dirname(__DIR__) . '/config/services.php';
 
 function respond(array $payload, int $status = 200): never
 {
@@ -33,10 +32,21 @@ if (!isset($_FILES['image']) || !is_array($_FILES['image'])) {
 
 $messages = [
     'UPLOAD_FAILED' => ['The image upload could not be read.', 422],
-    'INVALID_IMAGE_SIZE' => ['Image must be between 1 byte and 10 MB.', 422],
+    'INVALID_IMAGE_SIZE' => [
+        sprintf('Image must be between 1 byte and %s MB.', number_format($config['max_file_bytes'] / 1048576, 1)),
+        422,
+    ],
     'UNSUPPORTED_IMAGE_TYPE' => ['Supported formats: JPG, PNG, WebP, GIF, BMP, and TIFF.', 415],
     'IMAGE_DECODE_FAILED' => ['The uploaded file is not a decodable image.', 422],
-    'INVALID_IMAGE_DIMENSIONS' => ['Image dimensions must be at least 16px and no more than 8192px per side or 40 megapixels.', 422],
+    'INVALID_IMAGE_DIMENSIONS' => [
+        sprintf(
+            'Image dimensions must be at least 16px, no more than %d × %dpx, and no more than %s megapixels.',
+            $config['max_width'],
+            $config['max_height'],
+            number_format($config['max_pixels'] / 1000000, 1)
+        ),
+        422,
+    ],
     'IMAGE_READ_FAILED' => ['The uploaded image could not be read.', 500],
 ];
 
@@ -47,7 +57,7 @@ try {
     respond(['ok' => false, 'error' => ['code' => $error->getMessage(), 'message' => $message]], $status);
 }
 
-$token = trim((string) getenv('HUGGINGFACE_API_TOKEN'));
+$token = $services['huggingface']['token'];
 $model = [
     'status' => 'not_configured',
     'model_id' => $config['id'],

@@ -15,7 +15,7 @@ export const ALLOWED_IMAGE_TYPES = Object.freeze([
   "image/tiff",
 ]);
 
-export function validateUploadCandidate(file) {
+export function validateUploadCandidate(file, limits = IMAGE_LIMITS) {
   if (!file) {
     return {
       ok: false,
@@ -38,19 +38,22 @@ export function validateUploadCandidate(file) {
   if (
     !Number.isFinite(file.size) ||
     file.size < 1 ||
-    file.size > IMAGE_LIMITS.maxFileBytes
+    file.size > limits.maxFileBytes
   ) {
     return {
       ok: false,
       code: "INVALID_IMAGE_SIZE",
-      message: "Image size must be between 1 byte and 10 MB.",
+      message: `Image size must be between 1 byte and ${(limits.maxFileBytes / (1024 * 1024)).toFixed(1)} MB.`,
     };
   }
 
   return { ok: true };
 }
 
-export function validateImageDimensions({ width, height }) {
+export function validateImageDimensions(
+  { width, height },
+  limits = IMAGE_LIMITS,
+) {
   if (!Number.isInteger(width) || !Number.isInteger(height)) {
     return {
       ok: false,
@@ -58,23 +61,22 @@ export function validateImageDimensions({ width, height }) {
       message: "The selected file could not be decoded as an image.",
     };
   }
-  if (width < IMAGE_LIMITS.minDimension || height < IMAGE_LIMITS.minDimension) {
+  if (width < limits.minDimension || height < limits.minDimension) {
     return {
       ok: false,
       code: "IMAGE_TOO_SMALL",
-      message: `Image must be at least ${IMAGE_LIMITS.minDimension}px on each side.`,
+      message: `Image must be at least ${limits.minDimension}px on each side.`,
     };
   }
   if (
-    width > IMAGE_LIMITS.maxWidth ||
-    height > IMAGE_LIMITS.maxHeight ||
-    width * height > IMAGE_LIMITS.maxPixels
+    width > limits.maxWidth ||
+    height > limits.maxHeight ||
+    width * height > limits.maxPixels
   ) {
     return {
       ok: false,
       code: "IMAGE_TOO_LARGE",
-      message:
-        "Image is too large. Maximum: 8192px per side and 40 megapixels.",
+      message: `Image is too large. Maximum: ${limits.maxWidth} × ${limits.maxHeight}px and ${(limits.maxPixels / 1_000_000).toFixed(1)} megapixels.`,
     };
   }
   return { ok: true };

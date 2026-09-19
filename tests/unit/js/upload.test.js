@@ -34,3 +34,25 @@ test("dimension limits reject small and decompression-heavy images", () => {
     ok: true,
   });
 });
+
+test("upload validation accepts server-provided limits", () => {
+  const limits = {
+    maxFileBytes: 100,
+    maxWidth: 100,
+    maxHeight: 80,
+    maxPixels: 8_000,
+    minDimension: 16,
+  };
+
+  assert.equal(
+    validateUploadCandidate(
+      { name: "photo.png", type: "image/png", size: 101 },
+      limits,
+    ).code,
+    "INVALID_IMAGE_SIZE",
+  );
+  assert.equal(
+    validateImageDimensions({ width: 101, height: 40 }, limits).code,
+    "IMAGE_TOO_LARGE",
+  );
+});

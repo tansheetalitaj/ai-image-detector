@@ -34,7 +34,8 @@ content in the repository.
 
 ## Running the evaluation
 
-1. Configure `HUGGINGFACE_API_TOKEN` in the PHP/Apache environment.
+1. Configure `HUGGINGFACE_API_TOKEN` in the project-root `.env` file or the
+   PHP/Apache environment.
 2. Populate `manifest.csv` and place the referenced images under an ignored local
    evaluation-data directory or another approved path.
 3. Start the local site.
@@ -43,6 +44,10 @@ content in the repository.
 ```powershell
 php scripts/evaluate.php --endpoint=http://ai-image-detector.local/api/analyze.php
 ```
+
+The `--endpoint` option is optional. Without it, the runner uses
+`EVALUATION_API_ENDPOINT`, or derives the endpoint from `APP_URL` and
+`APP_API_PATH`.
 
 The command reports coverage, precision, recall, false-positive rate,
 inconclusive rate, and the same metrics grouped by `image_type`. It refuses to

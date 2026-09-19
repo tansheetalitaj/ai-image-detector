@@ -24,7 +24,7 @@ export function calculateHeuristicScore(details) {
   return Math.max(0, Math.min(1, weightedTotal / totalWeight));
 }
 
-export function validateBackendPayload(payload) {
+export function validateBackendPayload(payload, expectedModelId = MODEL_ID) {
   if (
     !payload ||
     payload.ok !== true ||
@@ -40,7 +40,7 @@ export function validateBackendPayload(payload) {
 
   const model = payload.model;
   const schemaValid =
-    model.model_id === MODEL_ID &&
+    model.model_id === expectedModelId &&
     model.label_schema?.artificial === 0 &&
     model.label_schema?.human === 1 &&
     Number.isFinite(model.artificial_score) &&
@@ -59,6 +59,7 @@ export async function callBackendAPI(
   file,
   endpoint = "/api/analyze.php",
   fetchImpl = fetch,
+  expectedModelId = MODEL_ID,
 ) {
   const formData = new FormData();
   formData.append("image", file, file.name || "pasted-image");
@@ -87,5 +88,5 @@ export async function callBackendAPI(
     );
   }
 
-  return validateBackendPayload(payload);
+  return validateBackendPayload(payload, expectedModelId);
 }

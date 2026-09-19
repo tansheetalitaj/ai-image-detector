@@ -1,3 +1,13 @@
+<?php
+
+declare(strict_types=1);
+
+require_once dirname(__DIR__) . '/bootstrap.php';
+
+$appConfig = require dirname(__DIR__) . '/config/app.php';
+$modelConfig = require dirname(__DIR__) . '/config/model.php';
+$escape = static fn (string $value): string => htmlspecialchars($value, ENT_QUOTES, 'UTF-8');
+?>
 <!doctype html>
 <html lang="en">
 <head>
@@ -8,7 +18,14 @@
     <title>TraceLens — Image Authenticity Lab</title>
     <link rel="stylesheet" href="/public/assets/css/app.css">
 </head>
-<body>
+<body
+    data-api-endpoint="<?= $escape($appConfig['api_path']) ?>"
+    data-model-id="<?= $escape($modelConfig['id']) ?>"
+    data-max-file-bytes="<?= $modelConfig['max_file_bytes'] ?>"
+    data-max-width="<?= $modelConfig['max_width'] ?>"
+    data-max-height="<?= $modelConfig['max_height'] ?>"
+    data-max-pixels="<?= $modelConfig['max_pixels'] ?>"
+>
 <a class="skip-link" href="#mainContent">Skip to main content</a>
 <div class="ambient-grid" aria-hidden="true"></div>
 <div class="ambient-glow ambient-glow-one" aria-hidden="true"></div>
@@ -139,7 +156,7 @@
                             <span class="upload-target" aria-hidden="true"><svg viewBox="0 0 48 48"><path d="M24 33V13m0 0-7 7m7-7 7 7"></path><path d="M11 31v5a3 3 0 0 0 3 3h20a3 3 0 0 0 3-3v-5"></path></svg></span>
                             <span class="upload-text">Drop an image into the lens</span>
                             <span class="upload-hint">or choose a file from your device</span>
-                            <span class="upload-rule" id="uploadHint">JPG, PNG, WebP, GIF, BMP or TIFF <b>·</b> 10 MB maximum</span>
+                            <span class="upload-rule" id="uploadHint">JPG, PNG, WebP, GIF, BMP or TIFF <b>·</b> <?= $escape(number_format($modelConfig['max_file_bytes'] / 1048576, 1)) ?> MB maximum</span>
                             <input type="file" id="fileInput" accept="image/jpeg,image/png,image/webp,image/gif,image/bmp,image/tiff" aria-label="Choose an image to analyze">
                         </div>
 
@@ -166,8 +183,8 @@
 
                     <button type="button" class="settings-toggle" id="settingsToggle" aria-expanded="false" aria-controls="settingsPanel"><span>Analysis configuration</span><span class="settings-arrow" aria-hidden="true">＋</span></button>
                     <div class="settings-panel" id="settingsPanel" aria-hidden="true">
-                        <div><span class="config-label">Selected model</span><code>Organika/sdxl-detector</code></div>
-                        <div><span class="config-label">Decision policy</span><p>Scores from 0.35 to 0.65 are reported as inconclusive.</p></div>
+                        <div><span class="config-label">Selected model</span><code><?= $escape($modelConfig['id']) ?></code></div>
+                        <div><span class="config-label">Decision policy</span><p>Scores from <?= $escape((string) $modelConfig['thresholds']['human_max']) ?> to <?= $escape((string) $modelConfig['thresholds']['artificial_min']) ?> are reported as inconclusive.</p></div>
                         <p class="settings-note"><strong>Privacy:</strong> the original file reaches this application’s PHP backend for validation and metadata inspection. It is forwarded to Hugging Face only when the server administrator has configured a token.</p>
                     </div>
                 </div>

@@ -96,7 +96,22 @@ git clone https://github.com/tansheetalitaj/ai-image-detector.git
 cd ai-image-detector
 ```
 
-### 2. Run locally with PHP
+### 2. Install dependencies and create local configuration
+
+```powershell
+composer install
+Copy-Item .env.example .env
+```
+
+Open `.env` and add your Hugging Face token:
+
+```env
+HUGGINGFACE_API_TOKEN=hf_your_token_here
+```
+
+The `.env` file is loaded automatically and is ignored by Git.
+
+### 3. Run locally with PHP
 
 ```bash
 php -S localhost:8000
@@ -170,14 +185,19 @@ Playwright browser tests for every push and pull request.
 
 ## Server-side API token setup
 
-The Hugging Face token must be configured in the PHP/Apache process environment.
-It is never entered or stored in the browser.
+Runtime settings are centralized in `.env`. Copy `.env.example` to `.env`, then
+edit the local file. Values already configured in Apache, the operating system,
+or a deployment platform take precedence over `.env` values.
 
 ```env
 HUGGINGFACE_API_TOKEN=your_token_here
 ```
 
-Copying `.env.example` to `.env` is not sufficient by itself because the project deliberately does not include an environment-file loader. Configure the variable in Apache, the operating system, or your deployment platform and restart PHP/Apache.
+The real token remains on the PHP server and is never rendered into HTML or sent
+to JavaScript. Model settings, decision thresholds, upload limits, timeouts,
+application URLs, and the evaluation endpoint can also be changed through
+`.env`. See [`docs/CONFIGURATION.md`](docs/CONFIGURATION.md) for the complete
+variable reference and deployment precedence rules.
 
 The selected model is `Organika/sdxl-detector`. See [`docs/MODEL.md`](docs/MODEL.md) for its label schema, license, limitations, validation rules, and decision policy.
 
@@ -196,6 +216,7 @@ It reports precision, recall, false-positive rate, coverage, inconclusive rate, 
 ## Security Notes
 
 * Do not commit real API tokens.
+* Keep `.env` local; commit only `.env.example` with empty or placeholder values.
 * API credentials remain server-side.
 * Uploaded images use PHP temporary storage only and are not persisted by the application.
 * Use server-side validation for uploaded files.

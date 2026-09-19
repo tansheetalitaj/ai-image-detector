@@ -2,6 +2,8 @@
 
 declare(strict_types=1);
 
+require dirname(__DIR__) . '/bootstrap.php';
+
 function fail(string $message): never
 {
     fwrite(STDERR, "Evaluation failed: {$message}\n");
@@ -50,8 +52,9 @@ function pct(?float $value): string
 
 $options = getopt('', ['endpoint::', 'manifest::']);
 $root = dirname(__DIR__);
+$appConfig = require $root . '/config/app.php';
 $manifest = $options['manifest'] ?? $root . '/evaluation/manifest.csv';
-$endpoint = $options['endpoint'] ?? 'http://ai-image-detector.local/api/analyze.php';
+$endpoint = $options['endpoint'] ?? $appConfig['evaluation_endpoint'];
 
 if (!is_file($manifest) || ($handle = fopen($manifest, 'rb')) === false) {
     fail("manifest not found: {$manifest}");
