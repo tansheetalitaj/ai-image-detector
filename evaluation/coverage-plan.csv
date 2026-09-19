@@ -1,0 +1,10 @@
+image_type,label,generator_or_source,minimum_samples,status,notes
+photograph,human,camera-original,25,needs-curation,Prefer original JPEG files with retained EXIF
+digital_art,human,human-created,25,needs-curation,Include raster painting and vector exports
+edited_image,human,photo-editor,25,needs-curation,Record the exact edit and preserve the original pair
+screenshot,human,screen-capture,25,needs-curation,Include web desktop mobile and application screenshots
+generated,artificial,SDXL,25,needs-curation,Matched to the selected model family
+generated,artificial,Stable Diffusion 1.5,25,needs-curation,Cross-generator evaluation
+generated,artificial,Midjourney,25,needs-curation,Cross-generator evaluation
+generated,artificial,GLIDE,25,needs-curation,Cross-generator evaluation
+generated,artificial,BigGAN,25,needs-curation,Cross-generator evaluation
